@@ -47,3 +47,10 @@ app.post('/render', (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log('FFmpeg API running ✅');
 });
+// Add this at the bottom of server.js
+setInterval(() => {
+  const https = require('https');
+  https.get('https://YOUR-RENDER-URL.onrender.com/', (res) => {
+    console.log('Keep alive ping:', res.statusCode);
+  }).on('error', () => {});
+}, 840000); // 14 minutes
