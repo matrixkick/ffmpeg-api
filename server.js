@@ -11,6 +11,14 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.json({ status: 'FFmpeg API running ✅' });
 });
+app.post('/', (req, res) => {
+  console.log("POST request received");
+
+  res.json({
+    message: "POST working ✅",
+    body: req.body
+  });
+});
 
 app.post('/render', (req, res) => {
   const { imageUrl, audioUrl, hookText } = req.body;
