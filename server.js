@@ -1,8 +1,10 @@
+const express = require('express');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
-ffmpeg.setFfmpegPath(ffmpegPath);
-const express = require('express');
 const { execSync } = require('child_process');
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const app = express();
 app.use(express.json());
 
@@ -15,19 +17,33 @@ app.post('/render', (req, res) => {
   try {
     execSync(`wget -q "${imageUrl}" -O /tmp/bg.jpg`);
     execSync(`wget -q "${audioUrl}" -O /tmp/audio.mp3`);
-    execSync(`ffmpeg -y -loop 1 -i /tmp/bg.jpg \
-      -i /tmp/audio.mp3 \
-      -vf "drawtext=text='${hookText}':fontsize=48:\
-      fontcolor=white:x=(w-text_w)/2:y=150:\
-      shadowcolor=black:shadowx=2:shadowy=2" \
-      -c:v libx264 -c:a aac -b:a 192k \
-      -pix_fmt yuv420p -shortest /tmp/reel.mp4`);
-    res.json({ success: true });
+
+    ffmpeg()
+      .input('/tmp/bg.jpg')
+      .inputOptions(['-loop 1'])
+      .input('/tmp/audio.mp3')
+      .outputOptions([
+        '-c:v libx264',
+        '-tune stillimage',
+        '-c:a aac',
+        '-b:a 192k',
+        '-pix_fmt yuv420p',
+        '-shortest'
+      ])
+      .output('/tmp/reel.mp4')
+      .on('end', () => {
+        res.json({ success: true, message: 'Video rendered ✅' });
+      })
+      .on('error', (err) => {
+        res.status(500).json({ success: false, error: err.message });
+      })
+      .run();
+
   } catch(e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log('FFmpeg API running');
+  console.log('FFmpeg API running ✅');
 });
