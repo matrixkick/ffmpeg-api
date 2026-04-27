@@ -1,3 +1,6 @@
+const ffmpeg = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegPath);
 const express = require('express');
 const { execSync } = require('child_process');
 const app = express();
